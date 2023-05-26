@@ -1,0 +1,18 @@
+Zasoby:
+-Stworzone w pliku / dlugodystansowo, mozna pomyslec nad sciagnieciem z degry
+Ograniczenia:
+1. Prowadzący nie może prowadzić dwóch zajęć jednocześnie,
+2. Zajetosc sal,
+3. 12 opcji godzinowych w ciagu dnia (8:00 - 8:45, 8:55 - 9:40, 9:50 - 10:35, 10:45 - 11:30, 11:50 - 12:35, 12:45 - 13:30,
+ 13:40 - 14:25, 14:30 - 15:15, 15:20 - 16:05, 16:10 - 16:55, 17:00 - 17:45, 17:50 - 18:35)
+
+Cele:
+-Jak najmniej okienek u studentow i prowadzacych
+-
+Założenia:
+-wszystkie zajęcia są na wydziale (problem angielskiego)
+-plan układany dla konkretnego roku,
+
+1 krok:
+jakiekolwiek ulozenie planu przez algorytm i odczytanie jego
+,
