@@ -8,7 +8,7 @@ Ograniczenia:
 
 Cele:
 -Jak najmniej okienek u studentow i prowadzacych
--
+-jesli jednego dnia te same zajecia to po sobie
 Założenia:
 -wszystkie zajęcia są na wydziale (problem angielskiego)
 -plan układany dla konkretnego roku,
