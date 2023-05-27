@@ -62,12 +62,33 @@ class GeneticAlgorithm:
                     if schedule[day][hour] == "*":
                         schedule[day][hour] = subject
                         break
-
         return schedule
 
-    def perform_selection(self):
+    def perform_selection(self, chromosome):
         # operacje selekcji na tablicy chromosomów
-        pass
+        break_time = 0  # ilosc okienek
+        break_between_the_same_subject = 0  # jesli danego dnia jest 2 razy ten sam przedmiot, to niech będzie w ciągu
+        max_hours_per_day = 0   # maksymalna ilosc zajec jednego dnia (by byla jak najmniejsza, by rownomierny plan byl)
+
+        # szukanie okienek
+        for day, day_schedule in chromosome.items():
+            # resetowanie wartosci
+            have_lesson_in_this_day = False
+            temp_break_time = 0
+            for lesson_hour in day_schedule:
+                if have_lesson_in_this_day is False and lesson_hour != '*':  # jesli pierwsza lekcja tego dnia
+                    have_lesson_in_this_day = True
+                if have_lesson_in_this_day is True and lesson_hour == '*':  # jesli zaczal lekcje i ma okienko
+                    temp_break_time += 1    # tymczasowa przerwa (albo koniec zajec albo okienko)
+                if temp_break_time > 0 and lesson_hour != '*':  # stwierdzenie okienka
+                    break_time += temp_break_time
+                    temp_break_time = 0
+        return break_time
+
+
+
+
+
 
     def perform_crossover(self):
         # operacje krzyzowania na tablicy chromosomow
@@ -81,6 +102,8 @@ class GeneticAlgorithm:
 if __name__ == '__main__':
     genetic_algorithm = GeneticAlgorithm(population_size=100)
     first_school_schedule = genetic_algorithm.generate_initial_population()
+    fitness_score = genetic_algorithm.perform_selection(first_school_schedule)
+    print(f'{fitness_score} godzin okienka')
     # reszta logiki i dzialania algorytmu genetycznego
     for school_day, school_subjects in first_school_schedule.items():
         print(school_day, school_subjects)

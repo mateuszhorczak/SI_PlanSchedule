@@ -7,12 +7,11 @@ Ograniczenia:
  13:40 - 14:25, 14:30 - 15:15, 15:20 - 16:05, 16:10 - 16:55, 17:00 - 17:45, 17:50 - 18:35)
 
 Cele:
--Jak najmniej okienek u studentow i prowadzacych
--jesli jednego dnia te same zajecia to po sobie
-Założenia:
--wszystkie zajęcia są na wydziale (problem angielskiego)
--plan układany dla konkretnego roku,
+-Jak najmniej okienek pomiędzy zajęciami
+-jesli jednego dnia odbywają się te same zajecia to niech będą po sobie
+-rownomierne rozlozenie zajec
 
 1 krok:
 jakiekolwiek ulozenie planu przez algorytm i odczytanie jego
-,
+2 krok:
+jakiekolwiek modyfikacje planu przez algorytm
