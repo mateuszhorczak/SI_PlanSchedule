@@ -126,13 +126,19 @@ class GeneticAlgorithm:
         optimal_hours_day = math.ceil(optimal_hours_day)
 
         # wyliczenie funkcji fitness
-        fitness = 1000 * break_time + 100 * break_between_the_same_subject + max_school_day_length - optimal_hours_day
+        fitness = 10 * break_time + 400 * break_between_the_same_subject + 100 * (max_school_day_length - optimal_hours_day)
 
         return [break_time, break_between_the_same_subject, max_school_day_length, fitness]
 
-    def perform_crossover(self):
+    def perform_crossover(self, parent1, parent2):
         # operacje krzyzowania na tablicy chromosomow
-        pass
+        crossover_point = random.randint(0, len(parent1))
+
+        child = parent1[:crossover_point] + parent2[crossover_point:]
+        print(child)
+        return child
+
+
 
     def perform_mutation(self):
         # operacje mutacji na tablicy chromosomow
@@ -140,13 +146,36 @@ class GeneticAlgorithm:
 
 
 if __name__ == '__main__':
-    genetic_algorithm = GeneticAlgorithm(population_size=100)
-    first_school_schedule = genetic_algorithm.generate_initial_population()
-    fitness_score = genetic_algorithm.perform_selection(first_school_schedule)
-    print(f'ilosc okienek: {fitness_score[0]}')
-    print(f'ilosc dlugich przerw miedzy tymi samymi przedmiotami w ciagu dnia: {fitness_score[1]}')
-    print(f'najdluzszy czas w szkole: {fitness_score[2]}')
-    print(f'Fitness score: {fitness_score[3]}')
-    # reszta logiki i dzialania algorytmu genetycznego
-    for school_day, school_subjects in first_school_schedule.items():
-        print(school_day, school_subjects)
+    best_score = [0, 0, 0, 99999]
+    solutions = []
+    best_schedule = {}
+
+    # generate solutions
+    for _ in range(10000):
+        genetic_algorithm = GeneticAlgorithm(population_size=100)
+        school_schedule = genetic_algorithm.generate_initial_population()
+        fitness_score = genetic_algorithm.perform_selection(school_schedule)
+        solutions.append((school_schedule, fitness_score))
+
+    solutions.sort(reverse=False, key=lambda x: x[1][3])
+    best_solutions = solutions[:10]
+
+    for solution in best_solutions:
+        for day_name, subjects in solution[0].items():
+            print(day_name + ': ' + str(subjects))
+        print(f'Ilosc okienek: {solution[1][0]}')
+        print(f'Przerwy w przedmiotach: {solution[1][1]}')
+        print(f'Najwiecej godzin: {solution[1][2]}')
+        print(f'Wynik fitness: {solution[1][3]}')
+
+        # if fitness_score[3] < best_score[3]:
+        #     best_score = fitness_score
+        #     best_schedule = school_schedule
+
+    # print(f'ilosc okienek: {best_score[0]}')
+    # print(f'ilosc dlugich przerw miedzy tymi samymi przedmiotami w ciagu dnia: {best_score[1]}')
+    # print(f'najdluzszy czas w szkole: {best_score[2]}')
+    # print(f'Fitness score: {best_score[3]}')
+    # # reszta logiki i dzialania algorytmu genetycznego
+    # for school_day, school_subjects in best_schedule.items():
+    #     print(school_day, school_subjects)
