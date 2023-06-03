@@ -18,14 +18,15 @@ class FirstClass:  # mat-fiz for example, so +2 to each
         self.physics = 3
         self.math = 5
         self.it = 1
-        self.pe = 3  # wf
+        self.pe = 3
         self.education_for_safety = 1
         self.tutoring_hour = 1
 
 
 class GeneticAlgorithm:
-    def __init__(self, population_size):
+    def __init__(self, population_size, mutation_probability):
         self.population_size = population_size
+        self.mutation_probability = mutation_probability
 
     def generate_initial_population(self):
         # generowanie populacji poczatkowej i wypelnienie tablicy chromosomow
@@ -63,6 +64,11 @@ class GeneticAlgorithm:
                     if schedule[day][hour] == "*":
                         schedule[day][hour] = subject
                         break
+        if self.mutation_probability >= random.uniform(0, 1):
+            muted_schedule_values = genetic_algorithm.perform_mutation(schedule)
+
+            schedule.update(muted_schedule_values)
+
         return schedule
 
     def perform_selection(self, chromosome):
@@ -105,7 +111,7 @@ class GeneticAlgorithm:
                     if check_subjects.get(lesson_hour) > 1 and lesson_hour == day_schedule[i + 1]:
                         break_between_the_same_subject -= 1
 
-         # maksymalna dlugosc dnia szkolnego
+        # maksymalna dlugosc dnia szkolnego
         school_days_length = []
         for day, day_schedule in chromosome.items():
             first_lesson = -1
@@ -126,7 +132,8 @@ class GeneticAlgorithm:
         optimal_hours_day = math.ceil(optimal_hours_day)
 
         # wyliczenie funkcji fitness
-        fitness = 10 * break_time + 400 * break_between_the_same_subject + 100 * (max_school_day_length - optimal_hours_day)
+        fitness = 10 * break_time + 400 * break_between_the_same_subject + 100 * (
+                max_school_day_length - optimal_hours_day)
 
         return [break_time, break_between_the_same_subject, max_school_day_length, fitness]
 
@@ -138,11 +145,32 @@ class GeneticAlgorithm:
         print(child)
         return child
 
-
-
-    def perform_mutation(self):
+    def perform_mutation(self, chromosome):
         # operacje mutacji na tablicy chromosomow
-        pass
+        muted_chromosome = chromosome
+        for day, day_schedule in muted_chromosome.items():
+            for i, lesson_hour in enumerate(day_schedule):
+                # logika kiedy wystepuje mutacja
+                if (i == 11 or day_schedule[i + 1] == '*') \
+                        and (i == 0 or day_schedule[i - 1] == '*') and lesson_hour != '*':
+                    # ---------
+                    score_before_mutation = genetic_algorithm.perform_selection(muted_chromosome)
+                    fitness_score_before_mutation = score_before_mutation[3]
+                    muted_gen = lesson_hour
+                    day_schedule[i] = '*'
+                    while True:
+                        rand_day = random.choice(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
+                        rand_hour = random.choice(list(range(1, 12)))
+                        if muted_chromosome[rand_day][rand_hour] == '*':
+                            muted_chromosome[rand_day][rand_hour] = muted_gen
+                            break
+                    score_after_mutation = genetic_algorithm.perform_selection(muted_chromosome)
+                    fitness_score_after_mutation = score_after_mutation[3]
+                    if fitness_score_before_mutation >= fitness_score_after_mutation:
+                        chromosome.update(muted_chromosome)
+                    else:
+                        return chromosome
+        return muted_chromosome
 
 
 if __name__ == '__main__':
@@ -152,7 +180,7 @@ if __name__ == '__main__':
 
     # generate solutions
     for _ in range(10000):
-        genetic_algorithm = GeneticAlgorithm(population_size=100)
+        genetic_algorithm = GeneticAlgorithm(population_size=100, mutation_probability=0.9)
         school_schedule = genetic_algorithm.generate_initial_population()
         fitness_score = genetic_algorithm.perform_selection(school_schedule)
         solutions.append((school_schedule, fitness_score))
@@ -161,21 +189,9 @@ if __name__ == '__main__':
     best_solutions = solutions[:10]
 
     for solution in best_solutions:
-        for day_name, subjects in solution[0].items():
-            print(day_name + ': ' + str(subjects))
+        for day_name, schedule_day in solution[0].items():
+            print(day_name + ': ' + str(schedule_day))
         print(f'Ilosc okienek: {solution[1][0]}')
         print(f'Przerwy w przedmiotach: {solution[1][1]}')
         print(f'Najwiecej godzin: {solution[1][2]}')
         print(f'Wynik fitness: {solution[1][3]}')
-
-        # if fitness_score[3] < best_score[3]:
-        #     best_score = fitness_score
-        #     best_schedule = school_schedule
-
-    # print(f'ilosc okienek: {best_score[0]}')
-    # print(f'ilosc dlugich przerw miedzy tymi samymi przedmiotami w ciagu dnia: {best_score[1]}')
-    # print(f'najdluzszy czas w szkole: {best_score[2]}')
-    # print(f'Fitness score: {best_score[3]}')
-    # # reszta logiki i dzialania algorytmu genetycznego
-    # for school_day, school_subjects in best_schedule.items():
-    #     print(school_day, school_subjects)
