@@ -24,9 +24,10 @@ class FirstClass:  # mat-fiz for example, so +2 to each
 
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_probability):
+    def __init__(self, population_size, mutation_probability, crossed_probability):
         self.population_size = population_size
         self.mutation_probability = mutation_probability
+        self.crossed_probability = crossed_probability
 
     def generate_initial_population(self):
         # generowanie populacji poczatkowej i wypelnienie tablicy chromosomow
@@ -59,16 +60,14 @@ class GeneticAlgorithm:
         for subject, hours_per_week in subjects.items():
             for _ in range(hours_per_week):
                 while True:
-                    day = random.choice(days)
-                    hour = random.choice(hours)
-                    if schedule[day][hour] == "*":
-                        schedule[day][hour] = subject
+                    rand_day = random.choice(days)
+                    rand_hour = random.choice(hours)
+                    if schedule[rand_day][rand_hour] == "*":
+                        schedule[rand_day][rand_hour] = subject
                         break
         if self.mutation_probability >= random.uniform(0, 1):
             muted_schedule_values = genetic_algorithm.perform_mutation(schedule)
-
             schedule.update(muted_schedule_values)
-
         return schedule
 
     def perform_selection(self, chromosome):
@@ -139,10 +138,46 @@ class GeneticAlgorithm:
 
     def perform_crossover(self, parent1, parent2):
         # operacje krzyzowania na tablicy chromosomow
-        crossover_point = random.randint(0, len(parent1))
+        crossover_point = random.randint(0, 5)
+        if crossover_point == 0:
+            child = parent2
+            removed_subjects_during_crossover = []
+        elif crossover_point == 1:
+            child = parent2
+            removed_subjects_during_crossover = child.get('monday')
+            child.update({'monday': ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']})
+        elif crossover_point == 2:
+            child = parent2
+            removed_subjects_during_crossover = child.get('monday') + child.get('tuesday')
+            child.update({'monday': ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                          'tuesday': ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']})
+        elif crossover_point == 3:
+            child = parent1
+            removed_subjects_during_crossover = child.get('thursday') + child.get('friday')
+            child.update({'thursday': ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                          'friday': ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']})
+        elif crossover_point == 4:
+            child = parent1
+            removed_subjects_during_crossover = child.get('friday')
+            child.update({'friday': ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*']})
+        else:
+            child = parent1
+            removed_subjects_during_crossover = []
 
-        child = parent1[:crossover_point] + parent2[crossover_point:]
-        print(child)
+        missing_subjects = {}
+        for subject in removed_subjects_during_crossover:
+            subject_number = 1 if missing_subjects.get(subject) is None else int(missing_subjects.get(subject)) + 1
+            missing_subjects.update({subject: subject_number}) if subject != '*' else None
+
+        # Przydzielanie przedmiotów do planu zajęć
+        for subject, hours_per_week in missing_subjects.items():
+            for _ in range(hours_per_week):
+                while True:
+                    rand_day = random.choice(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
+                    rand_hour = random.choice(list(range(0, 12)))
+                    if child[rand_day][rand_hour] == "*":
+                        child[rand_day][rand_hour] = subject
+                        break
         return child
 
     def perform_mutation(self, chromosome):
@@ -180,10 +215,20 @@ if __name__ == '__main__':
 
     # generate solutions
     for _ in range(10000):
-        genetic_algorithm = GeneticAlgorithm(population_size=100, mutation_probability=0.9)
+        genetic_algorithm = GeneticAlgorithm(population_size=100, mutation_probability=0.2, crossed_probability=0.5)
         school_schedule = genetic_algorithm.generate_initial_population()
         fitness_score = genetic_algorithm.perform_selection(school_schedule)
         solutions.append((school_schedule, fitness_score))
+
+    solutions.sort(reverse=False, key=lambda x: x[1][3])
+    best_solutions = solutions[:10]
+
+    if genetic_algorithm.crossed_probability >= random.uniform(0, 1):
+        potential_parent1 = random.choice(best_solutions)
+        potential_parent2 = random.choice(best_solutions)
+        child_after_crossed = genetic_algorithm.perform_crossover(potential_parent1[0], potential_parent2[0])
+        fitness_score = genetic_algorithm.perform_selection(child_after_crossed)
+        solutions.append((child_after_crossed, fitness_score))
 
     solutions.sort(reverse=False, key=lambda x: x[1][3])
     best_solutions = solutions[:10]
