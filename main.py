@@ -209,31 +209,37 @@ class GeneticAlgorithm:
 
 
 if __name__ == '__main__':
-    best_score = [0, 0, 0, 99999]
-    solutions = []
-    best_schedule = {}
+    all_solutions = []
+    for generation in range(100):
+        best_score = [0, 0, 0, 99999]
+        solutions = []
+        best_schedule = {}
 
-    # generate solutions
-    for _ in range(10000):
-        genetic_algorithm = GeneticAlgorithm(population_size=100, mutation_probability=0.2, crossed_probability=0.5)
-        school_schedule = genetic_algorithm.generate_initial_population()
-        fitness_score = genetic_algorithm.perform_selection(school_schedule)
-        solutions.append((school_schedule, fitness_score))
+        # generate solutions
+        for _ in range(1000):
+            genetic_algorithm = GeneticAlgorithm(population_size=100, mutation_probability=0.2, crossed_probability=0.5)
+            school_schedule = genetic_algorithm.generate_initial_population()
+            fitness_score = genetic_algorithm.perform_selection(school_schedule)
+            solutions.append((school_schedule, fitness_score))
 
-    solutions.sort(reverse=False, key=lambda x: x[1][3])
-    best_solutions = solutions[:10]
+        solutions.sort(reverse=False, key=lambda x: x[1][3])
+        best_solutions = solutions[:10]
 
-    if genetic_algorithm.crossed_probability >= random.uniform(0, 1):
-        potential_parent1 = random.choice(best_solutions)
-        potential_parent2 = random.choice(best_solutions)
-        child_after_crossed = genetic_algorithm.perform_crossover(potential_parent1[0], potential_parent2[0])
-        fitness_score = genetic_algorithm.perform_selection(child_after_crossed)
-        solutions.append((child_after_crossed, fitness_score))
+        if genetic_algorithm.crossed_probability >= random.uniform(0, 1):
+            potential_parent1 = random.choice(best_solutions)
+            potential_parent2 = random.choice(best_solutions)
+            child_after_crossed = genetic_algorithm.perform_crossover(potential_parent1[0], potential_parent2[0])
+            fitness_score = genetic_algorithm.perform_selection(child_after_crossed)
+            solutions.append((child_after_crossed, fitness_score))
 
-    solutions.sort(reverse=False, key=lambda x: x[1][3])
-    best_solutions = solutions[:10]
+        solutions.sort(reverse=False, key=lambda x: x[1][3])
+        best_solutions = solutions[:10]
 
-    for solution in best_solutions:
+        all_solutions = all_solutions + best_solutions
+
+        all_solutions.sort(reverse=False, key=lambda x: x[1][3])
+
+    for solution in all_solutions[:10]:
         for day_name, schedule_day in solution[0].items():
             print(day_name + ': ' + str(schedule_day))
         print(f'Ilosc okienek: {solution[1][0]}')
