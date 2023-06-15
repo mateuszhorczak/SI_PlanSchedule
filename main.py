@@ -144,16 +144,16 @@ class GeneticAlgorithm:
 
                         changed_day_schedule = self.students_class.schedule.get(rand_day)
                         changed_day_schedule[rand_hour] = new_lesson
-                        self.students_class.schedule.update({rand_day: changed_day_schedule})  # przypisuje do planu klasy
+                        self.students_class.schedule.update({'monday': changed_day_schedule})  # przypisuje do planu klasy
                         for classroom in self.classrooms:
                             if classroom.name == rand_classroom.name:
-                                changed_day_schedule = self.classrooms.schedule.get(rand_day)
+                                changed_day_schedule = classroom.schedule.get(rand_day)
                                 changed_day_schedule[rand_hour] = new_lesson
                                 classroom.schedule.update({rand_day: changed_day_schedule})  # przypisuje do planu sal
                                 break
                         for teacher in self.teachers:
                             if teacher.name == rand_teacher.name:
-                                changed_day_schedule = self.teachers.schedule.get(rand_day)
+                                changed_day_schedule = teacher.schedule.get(rand_day)
                                 changed_day_schedule[rand_hour] = new_lesson
                                 teacher.schedule.update({rand_day: changed_day_schedule})  # przypisuje do planu nauczyciela
                                 break
