@@ -29,10 +29,10 @@ class ClassRoom:
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = list(range(12))  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
-        schedule_array = []
-        for i in range(12):
-            schedule_array.append(Lesson('*', '*', '*'))
         for day in self.schedule:
+            schedule_array = []
+            for i in range(12):
+                schedule_array.append(Lesson('*', '*', '*'))
             self.schedule.update({day: schedule_array})
 
 
@@ -42,10 +42,10 @@ class Teacher:
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = list(range(12))  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
-        schedule_array = []
-        for i in range(12):
-            schedule_array.append(Lesson('*', '*', '*'))
         for day in self.schedule:
+            schedule_array = []
+            for i in range(12):
+                schedule_array.append(Lesson('*', '*', '*'))
             self.schedule.update({day: schedule_array})
 
 
@@ -55,10 +55,10 @@ class StudentsClass:
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = list(range(12))  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
-        schedule_array = []
-        for i in range(12):
-            schedule_array.append(Lesson('*', '*', '*'))
         for day in self.schedule:
+            schedule_array = []
+            for i in range(12):
+                schedule_array.append(Lesson('*', '*', '*'))
             self.schedule.update({day: schedule_array})
 
 
@@ -142,20 +142,16 @@ class GeneticAlgorithm:
 
                         new_lesson = Lesson(name=subject, classroom=rand_classroom, teacher=rand_teacher)
 
-                        changed_day_schedule = self.students_class.schedule.get(rand_day)
-                        changed_day_schedule[rand_hour] = new_lesson
-                        self.students_class.schedule.update({'monday': changed_day_schedule})  # przypisuje do planu klasy
+                        self.students_class.schedule[rand_day][rand_hour] = new_lesson  # przypisuje do planu klasy
+
                         for classroom in self.classrooms:
                             if classroom.name == rand_classroom.name:
-                                changed_day_schedule = classroom.schedule.get(rand_day)
-                                changed_day_schedule[rand_hour] = new_lesson
-                                classroom.schedule.update({rand_day: changed_day_schedule})  # przypisuje do planu sal
+                                classroom.schedule[rand_day][rand_hour] = self.students_class.schedule[rand_day][rand_hour]
                                 break
+
                         for teacher in self.teachers:
                             if teacher.name == rand_teacher.name:
-                                changed_day_schedule = teacher.schedule.get(rand_day)
-                                changed_day_schedule[rand_hour] = new_lesson
-                                teacher.schedule.update({rand_day: changed_day_schedule})  # przypisuje do planu nauczyciela
+                                teacher.schedule[rand_day][rand_hour] = new_lesson  # przypisuje do planu nauczyciela
                                 break
                         break
 
