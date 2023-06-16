@@ -424,11 +424,3 @@ if __name__ == '__main__':
 
         all_solutions.sort(reverse=False, key=lambda x: x[1])
     school_schedule.print_schedule(all_solutions[:1])
-
-    # for solution in all_solutions[:10]:
-    #     for day_name, schedule_day in solution[0].students_class.schedule.items():
-    #         print(day_name + ': ' + str(schedule_day))
-    #     print(f'Ilosc okienek: {solution[1][0]}')
-    #     print(f'Przerwy w przedmiotach: {solution[1][1]}')
-    #     print(f'Najwiecej godzin: {solution[1][2]}')
-    #     print(f'Wynik fitness: {solution[1][3]}')
