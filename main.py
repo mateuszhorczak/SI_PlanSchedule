@@ -90,8 +90,10 @@ class FourthClass:
 
 
 class ClassRoom:
-    def __init__(self, name):
+    def __init__(self, name, subjects):
         self.name = name
+        self.subjects = subjects
+
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = 12  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
@@ -106,6 +108,8 @@ class Teacher:
     def __init__(self, name, subjects):
         self.name = name
         self.subjects = subjects
+        self.class_tutoring = '*'
+
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = 12  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
@@ -120,6 +124,27 @@ class StudentsClass:
     def __init__(self, name, grade):
         self.name = name
         self.grade = grade
+        self.tutor = '*'
+        self.class_teachers = {
+            'polish_lang': '*',
+            'first_lang': '*',
+            'second_lang': '*',
+            'philosophy': '*',
+            'history': '*',
+            'history_and_the_present': '*',
+            'geography': '*',
+            'biology': '*',
+            'chemistry': '*',
+            'physics': '*',
+            'math': '*',
+            'it': '*',
+            'pe': '*',
+            'education_for_safety': '*',
+            'tutoring_hour': '*',
+            'entrepreneurship': '*',
+            'civics': '*'
+        }
+
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = 12  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
@@ -188,8 +213,8 @@ class GeneticAlgorithm:
                         teacher_names[k] = teacher_names[k] + ' ' * fix_subject_view
 
                     print(
-                        f'| {result_schedule[0][i].name} | {result_schedule[1][i].name} | {result_schedule[2][i].name} | '
-                        f'{result_schedule[3][i].name} | {result_schedule[4][i].name} |')
+                        f'| {result_schedule[0][i].name} | {result_schedule[1][i].name} | '
+                        f'{result_schedule[2][i].name} | {result_schedule[3][i].name} | {result_schedule[4][i].name} |')
                     print(
                         f'| {classroom_names[0]} | {classroom_names[1]} | {classroom_names[2]} | {classroom_names[3]} |'
                         f' {classroom_names[4]} |')
@@ -242,7 +267,21 @@ class GeneticAlgorithm:
 
                         if selected_students_class.schedule[rand_day][rand_hour].name == '*' and \
                                 rand_classroom.schedule[rand_day][rand_hour].classroom == '*' and \
-                                rand_teacher.schedule[rand_day][rand_hour].teacher == '*':
+                                rand_teacher.schedule[rand_day][rand_hour].teacher == '*' and \
+                                subject in rand_teacher.subjects and \
+                                subject in rand_classroom.subjects and \
+                                (selected_students_class.class_teachers[subject] == '*' or
+                                 selected_students_class.class_teachers[subject] == rand_teacher.name) and \
+                                (subject != 'tutoring_hour' or
+                                 (subject == 'tutoring_hour' and rand_teacher.class_tutoring == '*')):
+
+                            if selected_students_class.class_teachers[subject] == '*':
+                                selected_students_class.class_teachers.update({subject: rand_teacher.name})
+
+                            if subject == 'tutoring_hour':
+                                rand_teacher.class_tutoring = f'{selected_students_class.name}' \
+                                                              f'{selected_students_class.grade}'
+                                selected_students_class.tutor = rand_teacher.name
 
                             new_lesson = Lesson(name=subject, classroom=rand_classroom, teacher=rand_teacher,
                                                 day=rand_day,
@@ -273,7 +312,7 @@ class GeneticAlgorithm:
         for selected_students_class in chromosome:
 
             break_time = 0  # ilosc okienek
-            break_between_the_same_subject = 0  # jesli danego dnia jest 2 razy ten sam przedmiot, to niech będzie w ciągu
+            break_between_the_same_subject = 0  # jesli danego dnia jest 2 razy ten sam przedmiot, to w ciągu
             max_school_day_length = 0  # maksymalna dlugosc dnia (by byla jak najmniejsza, by rownomierny plan byl)
 
             # szukanie okienek
@@ -334,7 +373,6 @@ class GeneticAlgorithm:
             fitness = 10 * break_time + 400 * break_between_the_same_subject + 100 * (
                     max_school_day_length - optimal_hours_day)
 
-            # selected_students_class_fitness = [break_time, break_between_the_same_subject, max_school_day_length, fitness]
             school_fitness_score += fitness
         return school_fitness_score
 
@@ -454,8 +492,6 @@ class GeneticAlgorithm:
 
 if __name__ == '__main__':
     all_solutions = []
-    number_of_classrooms = 10
-    number_of_teachers = 20
     number_of_students_class = 2
     students_class_grades = [1, 2, 3, 4]
 
@@ -468,12 +504,69 @@ if __name__ == '__main__':
 
         # generate solutions
         for _ in range(100):
-            list_of_classrooms = []
-            for j in range(number_of_classrooms):
-                list_of_classrooms.append(ClassRoom(j + 1))
-            list_of_teachers = []
-            for j in range(number_of_teachers):
-                list_of_teachers.append(Teacher(f'Nauczyciel {j + 1}', []))
+            list_of_classrooms = [
+                ClassRoom(1, ['pe']),
+                ClassRoom(2, ['pe']),
+                ClassRoom(3, ['it', 'tutoring_hour']),
+                ClassRoom(4, ['it']),
+                ClassRoom(5, ['it']),
+                ClassRoom(6, ['chemistry']),
+                ClassRoom(7, ['chemistry', 'biology', 'physics', 'geography']),
+                ClassRoom(8, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+                ClassRoom(9, ['polish_lang', 'first_lang', 'second_lang', 'philosophy', 'history',
+                              'history_and_the_present', 'math', 'tutoring_hour', 'entrepreneurship', 'civics']),
+                ClassRoom(10, ['history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(11, ['history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(12, ['math', 'tutoring_hour']),
+                ClassRoom(13, ['math']),
+                ClassRoom(14, ['math']),
+                ClassRoom(15, ['education_for_safety', 'tutoring_hour']),
+                ClassRoom(16, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(17, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(18, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(19, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(20, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(21, ['math']),
+                ClassRoom(22, ['math']),
+                ClassRoom(23, ['math']),
+                ClassRoom(24, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+                ClassRoom(25, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+            ]
+
+            list_of_teachers = [
+                Teacher('Nauczyciel 1', ['tutoring_hour', 'polish_lang', 'philosophy']),
+                Teacher('Nauczyciel 2', ['tutoring_hour', 'polish_lang', 'philosophy']),
+                Teacher('Nauczyciel 3', ['history', 'polish_lang', 'first_lang']),
+                Teacher('Nauczyciel 4', ['tutoring_hour', 'first_lang', 'second_lang']),
+                Teacher('Nauczyciel 5', ['tutoring_hour', 'history', 'history_and_the_present']),
+                Teacher('Nauczyciel 6', ['tutoring_hour', 'history', 'history_and_the_present']),
+                Teacher('Nauczyciel 7', ['polish_lang', 'history', 'history_and_the_present']),
+                Teacher('Nauczyciel 8', ['tutoring_hour', 'pe']),
+                Teacher('Nauczyciel 9', ['pe']),
+                Teacher('Nauczyciel 10', ['pe']),
+                Teacher('Nauczyciel 11', ['education_for_safety']),
+                Teacher('Nauczyciel 12', ['first_lang']),
+                Teacher('Nauczyciel 13', ['second_lang']),
+                Teacher('Nauczyciel 14', ['first_lang', 'entrepreneurship']),
+                Teacher('Nauczyciel 15', ['tutoring_hour', 'biology', 'chemistry', 'physics']),
+                Teacher('Nauczyciel 16', ['tutoring_hour', 'biology', 'chemistry']),
+                Teacher('Nauczyciel 17', ['tutoring_hour', 'geography', 'education_for_safety', 'physics']),
+                Teacher('Nauczyciel 18', ['tutoring_hour', 'math']),
+                Teacher('Nauczyciel 19', ['tutoring_hour', 'math', 'it', 'physics']),
+                Teacher('Nauczyciel 20', ['tutoring_hour', 'math', 'it', 'physics']),
+                Teacher('Nauczyciel 21', ['tutoring_hour', 'math']),
+                Teacher('Nauczyciel 22', ['math']),
+                Teacher('Nauczyciel 23', ['civics', 'second_lang']),
+                Teacher('Nauczyciel 24', ['tutoring_hour', 'second_lang']),
+                Teacher('Nauczyciel 25', ['tutoring_hour', 'math', 'it']),
+                Teacher('Nauczyciel 26', ['polish_lang'])
+            ]
+
             list_of_students_class = []
             for j in range(number_of_students_class):
                 for grade_class in students_class_grades:
