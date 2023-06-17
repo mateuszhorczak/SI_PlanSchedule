@@ -536,6 +536,12 @@ if __name__ == '__main__':
                 ClassRoom(23, ['math']),
                 ClassRoom(24, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
                 ClassRoom(25, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+                ClassRoom(26, ['it']),
+                ClassRoom(27, ['it']),
+                ClassRoom(28, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour', 'math']),
+                ClassRoom(29, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour', 'math']),
+                ClassRoom(30, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour'])
             ]
 
             list_of_teachers = [
@@ -564,7 +570,13 @@ if __name__ == '__main__':
                 Teacher('Nauczyciel 23', ['civics', 'second_lang']),
                 Teacher('Nauczyciel 24', ['tutoring_hour', 'second_lang']),
                 Teacher('Nauczyciel 25', ['tutoring_hour', 'math', 'it']),
-                Teacher('Nauczyciel 26', ['polish_lang'])
+                Teacher('Nauczyciel 26', ['tutoring_hour', 'geography', 'education_for_safety', 'physics']),
+                Teacher('Nauczyciel 27', ['polish_lang']),
+                Teacher('Nauczyciel 28', ['it', 'physics']),
+                Teacher('Nauczyciel 29', ['first_lang']),
+                Teacher('Nauczyciel 30', ['tutoring_hour', 'biology', 'chemistry', 'physics']),
+                Teacher('Nauczyciel 31', ['math', 'it']),
+                Teacher('Nauczyciel 32', ['pe', 'tutoring_hour'])
             ]
 
             list_of_students_class = []
