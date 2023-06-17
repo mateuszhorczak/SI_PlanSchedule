@@ -164,6 +164,55 @@ class Lesson:
         self.hour = hour
 
 
+def print_schedule(result_solutions):
+    for number_of_solution, result_solution in enumerate(result_solutions):
+        print(f'Rozwiazanie: {number_of_solution + 1}')
+        for selected_students_class in result_solution[0].students_class:
+            print(f'klasa {selected_students_class.grade}{selected_students_class.name}')
+            result_schedule = list(selected_students_class.schedule.values())
+            table_width = 30
+
+            result_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            for i, result_day in enumerate(result_days):
+                fix_subject_view = table_width - len(result_day)
+                result_days[i] = result_days[i] + ' ' * fix_subject_view
+
+            for result_day in result_schedule:
+                for i, result_subject in enumerate(result_day):
+                    fix_subject_view = table_width - len(str(result_subject.name))
+                    result_day[i].name = str(result_day[i].name) + ' ' * fix_subject_view
+
+            print('-' * (5 * table_width + 16))
+            print(
+                f'| {result_days[0]} | {result_days[1]} | {result_days[2]} | {result_days[3]} | {result_days[4]} |')
+            print('-' * (5 * table_width + 16))
+            for i in range(12):
+                classroom_names = [
+                    str(result_schedule[k][i].classroom.name) if result_schedule[k][i].classroom != '*' else '*'
+                    for k in range(len(result_schedule))]
+                teacher_names = [
+                    str(result_schedule[k][i].teacher.name) if result_schedule[k][i].teacher != '*' else '*'
+                    for k in range(len(result_schedule))]
+
+                for k, classroom_name in enumerate(classroom_names):
+                    fix_subject_view = table_width - len(classroom_name)
+                    classroom_names[k] = classroom_names[k] + ' ' * fix_subject_view
+
+                for k, teacher_name in enumerate(teacher_names):
+                    fix_subject_view = table_width - len(teacher_name)
+                    teacher_names[k] = teacher_names[k] + ' ' * fix_subject_view
+
+                print(
+                    f'| {result_schedule[0][i].name} | {result_schedule[1][i].name} | '
+                    f'{result_schedule[2][i].name} | {result_schedule[3][i].name} | {result_schedule[4][i].name} |')
+                print(
+                    f'| {classroom_names[0]} | {classroom_names[1]} | {classroom_names[2]} | {classroom_names[3]} |'
+                    f' {classroom_names[4]} |')
+                print(f'| {teacher_names[0]} | {teacher_names[1]} | {teacher_names[2]} | {teacher_names[3]} |'
+                      f' {teacher_names[4]} |')
+                print('-' * (5 * table_width + 16))
+
+
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_probability, crossed_probability, classrooms, teachers,
                  students_class):
@@ -174,57 +223,9 @@ class GeneticAlgorithm:
         self.teachers = teachers
         self.students_class = students_class
 
-    def print_schedule(self, result_solutions):
-        for number_of_solution, result_solution in enumerate(result_solutions):
-            print(f'Rozwiazanie: {number_of_solution + 1}')
-            for selected_students_class in result_solution[0].students_class:
-                print(f'klasa {selected_students_class.grade}{selected_students_class.name}')
-                result_schedule = list(selected_students_class.schedule.values())
-                table_width = 30
-
-                result_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-                for i, result_day in enumerate(result_days):
-                    fix_subject_view = table_width - len(result_day)
-                    result_days[i] = result_days[i] + ' ' * fix_subject_view
-
-                for result_day in result_schedule:
-                    for i, result_subject in enumerate(result_day):
-                        fix_subject_view = table_width - len(str(result_subject.name))
-                        result_day[i].name = str(result_day[i].name) + ' ' * fix_subject_view
-
-                print('-' * (5 * table_width + 16))
-                print(
-                    f'| {result_days[0]} | {result_days[1]} | {result_days[2]} | {result_days[3]} | {result_days[4]} |')
-                print('-' * (5 * table_width + 16))
-                for i in range(12):
-                    classroom_names = [
-                        str(result_schedule[k][i].classroom.name) if result_schedule[k][i].classroom != '*' else '*'
-                        for k in range(len(result_schedule))]
-                    teacher_names = [
-                        str(result_schedule[k][i].teacher.name) if result_schedule[k][i].teacher != '*' else '*'
-                        for k in range(len(result_schedule))]
-
-                    for k, classroom_name in enumerate(classroom_names):
-                        fix_subject_view = table_width - len(classroom_name)
-                        classroom_names[k] = classroom_names[k] + ' ' * fix_subject_view
-
-                    for k, teacher_name in enumerate(teacher_names):
-                        fix_subject_view = table_width - len(teacher_name)
-                        teacher_names[k] = teacher_names[k] + ' ' * fix_subject_view
-
-                    print(
-                        f'| {result_schedule[0][i].name} | {result_schedule[1][i].name} | '
-                        f'{result_schedule[2][i].name} | {result_schedule[3][i].name} | {result_schedule[4][i].name} |')
-                    print(
-                        f'| {classroom_names[0]} | {classroom_names[1]} | {classroom_names[2]} | {classroom_names[3]} |'
-                        f' {classroom_names[4]} |')
-                    print(f'| {teacher_names[0]} | {teacher_names[1]} | {teacher_names[2]} | {teacher_names[3]} |'
-                          f' {teacher_names[4]} |')
-                    print('-' * (5 * table_width + 16))
-
     def generate_initial_population(self):
         # generowanie populacji poczatkowej i wypelnienie tablicy chromosomow
-        for selected_students_class in self.students_class:
+        for class_index, selected_students_class in enumerate(self.students_class):
             if selected_students_class.grade == 1:
                 selected_class = FirstClass()
             elif selected_students_class.grade == 2:
@@ -304,17 +305,17 @@ class GeneticAlgorithm:
                             break
 
             if self.mutation_probability >= random.uniform(0, 1):
-                self.perform_mutation(selected_students_class)
+                self.perform_mutation(selected_students_class.schedule, self.teachers, self.classrooms, class_index)
 
-    def perform_selection(self, genome):
+    def perform_selection(self):
         # operacje selekcji na tablicy chromosomów
         school_fitness_score = 0
         # definicja skalarow sluzacych do wyliczenia funkcji fitness
-        break_time_scalar = 10
-        break_between_the_same_subject_scalar = 400
-        day_length_scalar = 100
+        break_time_scalar = 100
+        break_between_the_same_subject_scalar = 1000
+        day_length_scalar = 10
 
-        chromosome = genome.students_class
+        chromosome = self.students_class
         for selected_students_class in chromosome:
 
             break_time = 0  # ilosc okienek
@@ -376,13 +377,14 @@ class GeneticAlgorithm:
             optimal_hours_day = math.ceil(optimal_hours_day)
 
             # wyliczenie funkcji fitness
-            fitness = break_time_scalar * break_time + break_between_the_same_subject_scalar * break_between_the_same_subject + day_length_scalar * (
-                    max_school_day_length - optimal_hours_day)
+            fitness = break_time_scalar * break_time + \
+                      break_between_the_same_subject_scalar * break_between_the_same_subject + \
+                      day_length_scalar * (max_school_day_length - optimal_hours_day)
 
             school_fitness_score += fitness
 
         # wyliczenie okienek nauczycieli
-        chromosome = genome.teachers
+        chromosome = self.teachers
         for selected_teacher in chromosome:
             break_time = 0  # ilosc okienek
 
@@ -487,31 +489,37 @@ class GeneticAlgorithm:
                         break
         return child
 
-    def perform_mutation(self, genome):
+    def perform_mutation(self, chromosome, teachers, classrooms, class_index):
         # operacje mutacji na tablicy chromosomow
-        chromosome = genome.schedule
-
-        muted_chromosome = chromosome
-        for day, day_schedule in muted_chromosome.items():
+        chromosome_copy = chromosome.copy()
+        teachers_copy = teachers.copy()
+        classrooms_copy = classrooms.copy()
+        for day, day_schedule in chromosome.items():
             for i, subject in enumerate(day_schedule):
                 # logika kiedy wystepuje mutacja
-                if (i == 11 or day_schedule[i + 1] == '*') \
-                        and (i == 0 or day_schedule[i - 1] == '*') and subject != '*':
+                if (i == 11 or day_schedule[i + 1].name == '*') \
+                        and (i == 0 or day_schedule[i - 1].name == '*') and subject.name != '*':
                     # ---------
-                    score_before_mutation = school_schedule.perform_selection(muted_chromosome)
-                    fitness_score_before_mutation = score_before_mutation[3]
+                    fitness_score_before_mutation = self.perform_selection()
                     muted_gen = subject
                     day_schedule[i] = Lesson('*', '*', '*', '*', '*')
-                    while True:
+                    for _ in range(1000):
                         rand_day = random.choice(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
                         rand_hour = random.choice(list(range(1, 12)))
-                        if muted_chromosome[rand_day][rand_hour] == Lesson('*', '*', '*', '*', '*'):
-                            muted_chromosome[rand_day][rand_hour] = muted_gen
+                        rand_teacher = random.choice(teachers)
+                        rand_classroom = random.choice(classrooms)
+                        if chromosome[rand_day][rand_hour].name == '*' and \
+                                rand_teacher.schedule[rand_day][rand_hour].teacher == '*' and \
+                                rand_classroom.schedule[rand_day][rand_hour].classroom == '*':
+                            self.students_class[class_index].schedule[rand_day][rand_hour] = muted_gen
+                            rand_teacher.schedule[rand_day][rand_hour] = muted_gen
+                            rand_classroom.schedule[rand_day][rand_hour] = muted_gen
                             break
-                    score_after_mutation = school_schedule.perform_selection(muted_chromosome)
-                    fitness_score_after_mutation = score_after_mutation[3]
-                    if fitness_score_before_mutation >= fitness_score_after_mutation:
-                        genome.schedule.update(muted_chromosome)
+                    fitness_score_after_mutation = self.perform_selection()
+                    if not fitness_score_before_mutation > fitness_score_after_mutation:
+                        self.students_class[class_index].schedule.update(chromosome_copy)
+                        self.teachers = teachers_copy
+                        self.classrooms = classrooms_copy
                     else:
                         return
         return
@@ -534,41 +542,43 @@ if __name__ == '__main__':
             list_of_classrooms = [
                 ClassRoom(1, ['pe']),
                 ClassRoom(2, ['pe']),
-                ClassRoom(3, ['it', 'tutoring_hour']),
-                ClassRoom(4, ['it']),
-                ClassRoom(5, ['it']),
-                ClassRoom(6, ['chemistry']),
-                ClassRoom(7, ['chemistry', 'biology', 'physics', 'geography']),
-                ClassRoom(8, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
-                ClassRoom(9, ['polish_lang', 'first_lang', 'second_lang', 'philosophy', 'history',
-                              'history_and_the_present', 'math', 'tutoring_hour', 'entrepreneurship', 'civics']),
-                ClassRoom(10, ['history', 'history_and_the_present', 'tutoring_hour']),
-                ClassRoom(11, ['history', 'history_and_the_present', 'tutoring_hour']),
-                ClassRoom(12, ['math', 'tutoring_hour']),
-                ClassRoom(13, ['math']),
-                ClassRoom(14, ['math']),
-                ClassRoom(15, ['education_for_safety', 'tutoring_hour']),
-                ClassRoom(16, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
-                               'history', 'history_and_the_present', 'tutoring_hour']),
-                ClassRoom(17, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
-                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(3, ['pe']),
+                ClassRoom(4, ['pe']),
+                ClassRoom(5, ['it', 'tutoring_hour']),
+                ClassRoom(6, ['it']),
+                ClassRoom(7, ['it']),
+                ClassRoom(8, ['chemistry']),
+                ClassRoom(9, ['chemistry', 'biology', 'physics', 'geography']),
+                ClassRoom(10, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+                ClassRoom(11, ['polish_lang', 'first_lang', 'second_lang', 'philosophy', 'history',
+                               'history_and_the_present', 'math', 'tutoring_hour', 'entrepreneurship', 'civics']),
+                ClassRoom(12, ['history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(13, ['history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(14, ['math', 'tutoring_hour']),
+                ClassRoom(15, ['math']),
+                ClassRoom(16, ['math']),
+                ClassRoom(17, ['education_for_safety', 'tutoring_hour']),
                 ClassRoom(18, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
                                'history', 'history_and_the_present', 'tutoring_hour']),
                 ClassRoom(19, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
                                'history', 'history_and_the_present', 'tutoring_hour']),
                 ClassRoom(20, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
                                'history', 'history_and_the_present', 'tutoring_hour']),
-                ClassRoom(21, ['math']),
-                ClassRoom(22, ['math']),
+                ClassRoom(21, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
+                ClassRoom(22, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                               'history', 'history_and_the_present', 'tutoring_hour']),
                 ClassRoom(23, ['math']),
-                ClassRoom(24, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
-                ClassRoom(25, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
-                ClassRoom(26, ['it']),
-                ClassRoom(27, ['it']),
-                ClassRoom(28, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour', 'math']),
-                ClassRoom(29, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
+                ClassRoom(24, ['math']),
+                ClassRoom(25, ['math']),
+                ClassRoom(26, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+                ClassRoom(27, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour']),
+                ClassRoom(28, ['it']),
+                ClassRoom(29, ['it']),
+                ClassRoom(30, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour', 'math']),
+                ClassRoom(31, ['entrepreneurship', 'civics', 'polish_lang', 'first_lang', 'second_lang', 'philosophy',
                                'history', 'history_and_the_present', 'tutoring_hour', 'math']),
-                ClassRoom(30, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour'])
+                ClassRoom(32, ['chemistry', 'biology', 'physics', 'geography', 'tutoring_hour'])
             ]
 
             list_of_teachers = [
@@ -615,7 +625,7 @@ if __name__ == '__main__':
                                                classrooms=list_of_classrooms, teachers=list_of_teachers,
                                                students_class=list_of_students_class)
             school_schedule.generate_initial_population()
-            fitness_score = school_schedule.perform_selection(school_schedule)
+            fitness_score = school_schedule.perform_selection()
             solutions.append([school_schedule, fitness_score])
 
         solutions.sort(reverse=False, key=lambda x: x[1])
@@ -625,7 +635,7 @@ if __name__ == '__main__':
             potential_parent1 = random.choice(best_solutions)
             potential_parent2 = random.choice(best_solutions)
             child_after_crossed = school_schedule.perform_crossover(potential_parent1[0], potential_parent2[0])
-            fitness_score = school_schedule.perform_selection(child_after_crossed)  # TODO
+            fitness_score = child_after_crossed.perform_selection()  # TODO
             solutions.append([child_after_crossed, fitness_score])
 
         solutions.sort(reverse=False, key=lambda x: x[1])
@@ -633,4 +643,4 @@ if __name__ == '__main__':
 
         all_solutions = all_solutions + best_solutions
         all_solutions.sort(reverse=False, key=lambda x: x[1])
-    school_schedule.print_schedule(all_solutions[:1])
+    print_schedule(all_solutions[:1])
