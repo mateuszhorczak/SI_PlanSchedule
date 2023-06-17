@@ -1,10 +1,11 @@
-# source: https://strefaedukacji.pl/przedmioty-w-liceum-wykaz-i-wymiar-godzin-w-konkretnych-klasach-tego
-# -nastolatkowie-ucza-sie-klasach-14-szkoly-ponadpodstawowej/ar/c5-16785765
+# source: https://strefaedukacji.pl/przedmioty-w-liceum-wykaz-i-wymiar-godzin-w-konkretnych-klasach-tego-nastolatkowie-
+# ucza-sie-klasach-14-szkoly-ponadpodstawowej/ar/c5-16785765
 import math
 import random
+import string
 
 
-class FirstClass:  # mat-fiz for example, so +2 to each
+class FirstClass:
     def __init__(self):
         self.polish_lang = 4
         self.first_lang = 3
@@ -21,6 +22,71 @@ class FirstClass:  # mat-fiz for example, so +2 to each
         self.pe = 3
         self.education_for_safety = 1
         self.tutoring_hour = 1
+        self.entrepreneurship = 0
+        self.civics = 0
+
+
+class SecondClass:
+    def __init__(self):
+        self.polish_lang = 4
+        self.first_lang = 3
+        self.second_lang = 2
+        self.history = 2
+        self.civics = 1
+        self.entrepreneurship = 1
+        self.geography = 2
+        self.biology = 2
+        self.chemistry = 2
+        self.physics = 3
+        self.math = 7
+        self.it = 1
+        self.pe = 3
+        self.tutoring_hour = 1
+        self.philosophy = 0
+        self.history_and_the_present = 0
+        self.education_for_safety = 0
+
+
+class ThirdClass:
+    def __init__(self):
+        self.polish_lang = 4
+        self.first_lang = 3
+        self.second_lang = 2
+        self.history = 2
+        self.entrepreneurship = 1
+        self.geography = 1
+        self.biology = 1
+        self.chemistry = 1
+        self.physics = 7
+        self.math = 5
+        self.it = 1
+        self.pe = 3
+        self.tutoring_hour = 1
+        self.civics = 0
+        self.philosophy = 0
+        self.history_and_the_present = 1
+        self.education_for_safety = 0
+
+
+class FourthClass:
+    def __init__(self):
+        self.polish_lang = 4
+        self.first_lang = 3
+        self.second_lang = 2
+        self.history = 1
+        self.physics = 4
+        self.math = 5
+        self.pe = 3
+        self.tutoring_hour = 1
+        self.entrepreneurship = 0
+        self.civics = 0
+        self.philosophy = 0
+        self.history_and_the_present = 1
+        self.geography = 0
+        self.biology = 0
+        self.chemistry = 0
+        self.it = 0
+        self.education_for_safety = 0
 
 
 class ClassRoom:
@@ -37,8 +103,9 @@ class ClassRoom:
 
 
 class Teacher:
-    def __init__(self, name):
+    def __init__(self, name, subjects):
         self.name = name
+        self.subjects = subjects
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = 12  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
@@ -50,8 +117,9 @@ class Teacher:
 
 
 class StudentsClass:
-    def __init__(self, name):
+    def __init__(self, name, grade):
         self.name = name
+        self.grade = grade
         days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
         hours = 12  # 12 godzin lekcyjnych w ciagu dnia
         self.schedule = {day: [] for day in days}
@@ -85,7 +153,7 @@ class GeneticAlgorithm:
         for number_of_solution, result_solution in enumerate(result_solutions):
             print(f'Rozwiazanie: {number_of_solution + 1}')
             for selected_students_class in result_solution[0].students_class:
-                print(selected_students_class.name)
+                print(f'klasa {selected_students_class.grade}{selected_students_class.name}')
                 result_schedule = list(selected_students_class.schedule.values())
                 table_width = 30
 
@@ -131,31 +199,39 @@ class GeneticAlgorithm:
 
     def generate_initial_population(self):
         # generowanie populacji poczatkowej i wypelnienie tablicy chromosomow
-        selected_class = FirstClass()
-
-        subjects = {
-            "polish_lang": selected_class.polish_lang,
-            "first_lang": selected_class.first_lang,
-            "second_lang": selected_class.second_lang,
-            "philosophy": selected_class.philosophy,
-            "history": selected_class.history,
-            "history_and_the_present": selected_class.history_and_the_present,
-            "geography": selected_class.geography,
-            "biology": selected_class.biology,
-            "chemistry": selected_class.chemistry,
-            "physics": selected_class.physics,
-            "math": selected_class.math,
-            "it": selected_class.it,
-            "pe": selected_class.pe,
-            "education_for_safety": selected_class.education_for_safety,
-            "tutoring_hour": selected_class.tutoring_hour
-        }
-
-        days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
-        hours = list(range(12))  # 12 godzin lekcyjnych w ciagu dnia
-
-        # Przydzielanie przedmiotów do planu zajęć
         for selected_students_class in self.students_class:
+            if selected_students_class.grade == 1:
+                selected_class = FirstClass()
+            elif selected_students_class.grade == 2:
+                selected_class = SecondClass()
+            elif selected_students_class.grade == 3:
+                selected_class = ThirdClass()
+            else:
+                selected_class = FourthClass()
+            subjects = {
+                "polish_lang": selected_class.polish_lang,
+                "first_lang": selected_class.first_lang,
+                "second_lang": selected_class.second_lang,
+                "philosophy": selected_class.philosophy,
+                "history": selected_class.history,
+                "history_and_the_present": selected_class.history_and_the_present,
+                "geography": selected_class.geography,
+                "biology": selected_class.biology,
+                "chemistry": selected_class.chemistry,
+                "physics": selected_class.physics,
+                "math": selected_class.math,
+                "it": selected_class.it,
+                "pe": selected_class.pe,
+                "education_for_safety": selected_class.education_for_safety,
+                "tutoring_hour": selected_class.tutoring_hour,
+                "entrepreneurship": selected_class.entrepreneurship,
+                "civics": selected_class.civics
+            }
+
+            days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+            hours = list(range(12))  # 12 godzin lekcyjnych w ciagu dnia
+
+            # Przydzielanie przedmiotów do planu zajęć
             for subject, hours_per_week in subjects.items():
                 for _ in range(hours_per_week):
                     while True:
@@ -378,13 +454,15 @@ class GeneticAlgorithm:
 
 if __name__ == '__main__':
     all_solutions = []
-    number_of_classrooms = 40
-    number_of_teachers = 30
-    number_of_students_class = 3
+    number_of_classrooms = 10
+    number_of_teachers = 20
+    number_of_students_class = 2
+    students_class_grades = [1, 2, 3, 4]
 
     # generate generations
     for generation in range(10):
         best_score = [0, 0, 0, 99999]
+        letters = string.ascii_uppercase
         solutions = []
         best_schedule = {}
 
@@ -395,10 +473,11 @@ if __name__ == '__main__':
                 list_of_classrooms.append(ClassRoom(j + 1))
             list_of_teachers = []
             for j in range(number_of_teachers):
-                list_of_teachers.append(Teacher(f'Nauczyciel {j + 1}'))
+                list_of_teachers.append(Teacher(f'Nauczyciel {j + 1}', []))
             list_of_students_class = []
             for j in range(number_of_students_class):
-                list_of_students_class.append(StudentsClass(f'Klasa {j + 1}'))
+                for grade_class in students_class_grades:
+                    list_of_students_class.append(StudentsClass(letters[j], grade_class))
 
             school_schedule = GeneticAlgorithm(population_size=100, mutation_probability=0.2, crossed_probability=0.5,
                                                classrooms=list_of_classrooms, teachers=list_of_teachers,
