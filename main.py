@@ -306,9 +306,15 @@ class GeneticAlgorithm:
             if self.mutation_probability >= random.uniform(0, 1):
                 self.perform_mutation(selected_students_class)
 
-    def perform_selection(self, chromosome):
+    def perform_selection(self, genome):
         # operacje selekcji na tablicy chromosomów
         school_fitness_score = 0
+        # definicja skalarow sluzacych do wyliczenia funkcji fitness
+        break_time_scalar = 10
+        break_between_the_same_subject_scalar = 400
+        day_length_scalar = 100
+
+        chromosome = genome.students_class
         for selected_students_class in chromosome:
 
             break_time = 0  # ilosc okienek
@@ -370,15 +376,36 @@ class GeneticAlgorithm:
             optimal_hours_day = math.ceil(optimal_hours_day)
 
             # wyliczenie funkcji fitness
-            fitness = 10 * break_time + 400 * break_between_the_same_subject + 100 * (
+            fitness = break_time_scalar * break_time + break_between_the_same_subject_scalar * break_between_the_same_subject + day_length_scalar * (
                     max_school_day_length - optimal_hours_day)
 
             school_fitness_score += fitness
+
+        # wyliczenie okienek nauczycieli
+        chromosome = genome.teachers
+        for selected_teacher in chromosome:
+            break_time = 0  # ilosc okienek
+
+            # szukanie okienek
+            for day, day_schedule in selected_teacher.schedule.items():
+                have_lesson_in_this_day = False
+                temp_break_time = 0
+                for subject in day_schedule:
+                    if have_lesson_in_this_day is False and subject.name != '*':  # jesli pierwsza lekcja tego dnia
+                        have_lesson_in_this_day = True
+                    if have_lesson_in_this_day is True and subject.name == '*':  # jesli zaczal lekcje i ma okienko
+                        temp_break_time += 1  # tymczasowa przerwa (albo koniec zajec albo okienko)
+                    if temp_break_time > 0 and subject.name != '*':  # stwierdzenie okienka
+                        break_time += temp_break_time
+                        temp_break_time = 0
+
+            # wyliczenie funkcji fitness
+            fitness = break_time_scalar * break_time
+            school_fitness_score += fitness
+
         return school_fitness_score
 
     def perform_crossover(self, parent1, parent2):
-        # parent1 = parent1_school_schedule.students_class.schedule
-        # parent2 = parent2_school_schedule.students_class.schedule
         # operacje krzyzowania na tablicy chromosomow
         crossover_point = random.randint(0, 5)
         empty_lesson = Lesson('*', '*', '*', '*', '*')
@@ -588,7 +615,7 @@ if __name__ == '__main__':
                                                classrooms=list_of_classrooms, teachers=list_of_teachers,
                                                students_class=list_of_students_class)
             school_schedule.generate_initial_population()
-            fitness_score = school_schedule.perform_selection(school_schedule.students_class)
+            fitness_score = school_schedule.perform_selection(school_schedule)
             solutions.append([school_schedule, fitness_score])
 
         solutions.sort(reverse=False, key=lambda x: x[1])
@@ -598,13 +625,12 @@ if __name__ == '__main__':
             potential_parent1 = random.choice(best_solutions)
             potential_parent2 = random.choice(best_solutions)
             child_after_crossed = school_schedule.perform_crossover(potential_parent1[0], potential_parent2[0])
-            fitness_score = school_schedule.perform_selection(child_after_crossed.students_class)  # TODO
+            fitness_score = school_schedule.perform_selection(child_after_crossed)  # TODO
             solutions.append([child_after_crossed, fitness_score])
 
         solutions.sort(reverse=False, key=lambda x: x[1])
         best_solutions = solutions[:10]
 
         all_solutions = all_solutions + best_solutions
-
         all_solutions.sort(reverse=False, key=lambda x: x[1])
     school_schedule.print_schedule(all_solutions[:1])
