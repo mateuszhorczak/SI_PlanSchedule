@@ -261,9 +261,8 @@ def print_teachers_schedule(result_solutions):
                 print(f'| {class_names[0]} | {class_names[1]} | {class_names[2]} | {class_names[3]} |'
                       f' {class_names[4]} |')
                 print('-' * (5 * table_width + 16))
-                
-                
-                
+
+
 def print_classrooms_schedule(result_solutions):
     for number_of_solution, result_solution in enumerate(result_solutions):
         print(f'Rozwiazanie: {number_of_solution + 1}')
@@ -314,9 +313,8 @@ def print_classrooms_schedule(result_solutions):
 
 
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_probability, crossed_probability, classrooms, teachers,
+    def __init__(self, mutation_probability, crossed_probability, classrooms, teachers,
                  students_class):
-        self.population_size = population_size
         self.mutation_probability = mutation_probability
         self.crossed_probability = crossed_probability
         self.classrooms = classrooms
@@ -510,87 +508,219 @@ class GeneticAlgorithm:
 
     def perform_crossover(self, parent1, parent2):
         # operacje krzyzowania na tablicy chromosomow
-        crossover_point = random.randint(0, 5)
-        empty_lesson = Lesson('*', '*', '*', '*', '*', '*')
-        empty_lesson_array = [empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson,
-                              empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson]
+        number_of_half_students_class = int(math.ceil(len(parent1.students_class) / 2))
 
-        crossover_class = random.choice(range(len(parent1.students_class)))
+        child_students_class = (parent1.students_class[:number_of_half_students_class] +
+                                parent2.students_class[number_of_half_students_class:]).copy()
 
-        if crossover_point == 0:
-            child = parent2
-            removed_subjects_during_crossover = []
-        elif crossover_point == 1:
-            child = parent2
-            removed_subjects_during_crossover = child.students_class[crossover_class].schedule.get('monday')
-            child.students_class[crossover_class].schedule.update({'monday': empty_lesson_array})
-        elif crossover_point == 2:
-            child = parent2
-            removed_subjects_during_crossover = child.students_class[crossover_class].schedule.get(
-                'monday') + child.students_class[crossover_class].schedule.get('tuesday')
-            child.students_class[crossover_class].schedule.update({'monday': empty_lesson_array,
-                                                                   'tuesday': empty_lesson_array})
-        elif crossover_point == 3:
-            child = parent1
-            removed_subjects_during_crossover = child.students_class[crossover_class].schedule.get(
-                'thursday') + child.students_class[crossover_class].schedule.get('friday')
-            child.students_class[crossover_class].schedule.update({'thursday': empty_lesson_array,
-                                                                   'friday': empty_lesson_array})
-        elif crossover_point == 4:
-            child = parent1
-            removed_subjects_during_crossover = child.students_class[crossover_class].schedule.get('friday')
-            child.students_class[crossover_class].schedule.update({'friday': empty_lesson_array})
+        child_teachers = parent1.teachers.copy()
+        child_classrooms = parent1.classrooms.copy()
 
-        else:
-            child = parent1
-            removed_subjects_during_crossover = []
+        days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+        hours = 12  # 12 godzin lekcyjnych w ciagu dnia
 
-        for subject in removed_subjects_during_crossover:
-            for classroom in child.classrooms:
-                if classroom != '*' and subject.classroom != '*' and classroom.name == subject.classroom.name:
-                    classroom.schedule[subject.day][subject.hour] = Lesson('*', '*', '*', '*', '*', '*')
-                    break
-            for teacher in child.teachers:
-                if teacher != '*' and subject.classroom != '*' and teacher.name == subject.teacher.name:
-                    teacher.schedule[subject.day][subject.hour] = Lesson('*', '*', '*', '*', '*', '*')
-                    break
+        # resetowanie przypisanych danych nauczyciela i sali
+        for teacher in child_teachers:
+            teacher.class_tutoring = '*'
+            teacher.schedule = {day: [] for day in days}
+            for day in teacher.schedule:
+                schedule_array = []
+                for i in range(hours):
+                    schedule_array.append(Lesson('*', '*', '*', '*', '*', '*'))
+                teacher.schedule.update({day: schedule_array})
+        for classroom in child_classrooms:
+            classroom.schedule = {day: [] for day in days}
+            for day in classroom.schedule:
+                schedule_array = []
+                for i in range(hours):
+                    schedule_array.append(Lesson('*', '*', '*', '*', '*', '*'))
+                classroom.schedule.update({day: schedule_array})
 
-        missing_subjects = {}
-        for subject in removed_subjects_during_crossover:
-            subject_number = 1 if missing_subjects.get(subject) is None else int(missing_subjects.get(subject)) + 1
-            missing_subjects.update({subject: subject_number}) if subject != Lesson('*', '*', '*', '*', '*', '*') \
-                else None
-
-        # Przydzielanie przedmiotów do planu zajęć
-        for subject, hours_per_week in missing_subjects.items():
-            for _ in range(hours_per_week):
-                while True:
-                    rand_day = random.choice(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
-                    rand_hour = random.choice(list(range(0, 12)))
-                    rand_classroom = random.choice(child.classrooms)
-                    rand_teacher = random.choice(child.teachers)
-
-                    if child.students_class[crossover_class].schedule[rand_day][rand_hour].name == '*' and \
-                            rand_classroom.schedule[rand_day][rand_hour].classroom == '*' \
-                            and rand_teacher.schedule[rand_day][rand_hour].teacher == '*':
-
-                        new_lesson = Lesson(name=subject.name, classroom=rand_classroom, teacher=rand_teacher,
-                                            day=rand_day, hour=rand_hour,
-                                            class_name=f'{child.students_class[crossover_class].grade}'
-                                                       f'{child.students_class[crossover_class].name}')
-
-                        child.students_class[crossover_class].schedule[rand_day][
-                            rand_hour] = new_lesson  # przypisuje do planu klasy
-
-                        for classroom in child.classrooms:
-                            if classroom.name == rand_classroom.name:
-                                classroom.schedule[rand_day][rand_hour] = new_lesson  # przypisuje do planu sal
+        for students_class in child_students_class:
+            for day, day_schedule in students_class.schedule.items():
+                for hour, subject in enumerate(day_schedule):
+                    if subject.name == 'tutoring_hour' and subject.teacher.class_tutoring == '*':
+                        subject.teacher.class_tutoring = f'{students_class.name}{students_class.grade}'
+                        students_class.tutor = subject.teacher.name
+                    elif subject.name == 'tutoring_hour':
+                        while True:
+                            rand_teacher = random.choice(child_teachers)
+                            rand_classroom = random.choice(child_classrooms)
+                            if subject.name in rand_teacher.subjects and \
+                                    subject.name in rand_classroom.subjects and \
+                                    rand_teacher.schedule[day][hour].name == '*' and \
+                                    rand_classroom.schedule[day][hour].name == '*':
+                                subject.classroom = rand_classroom
+                                subject.teacher = rand_teacher
+                                rand_teacher.schedule[day][hour] = subject
+                                rand_classroom.schedule[day][hour] = subject
+                                subject.teacher.class_tutoring = f'{students_class.name}{students_class.grade}'
+                                students_class.tutor = subject.teacher.name
+                                for child_teacher in child_teachers:
+                                    if child_teacher.name == subject.teacher.name:
+                                        child_teacher.schedule[day][hour] = subject
+                                        break
+                                for child_classroom in child_classrooms:
+                                    if child_classroom.name == subject.classroom.name:
+                                        child_classroom.schedule[day][hour] = subject
+                                        break
                                 break
-                        for teacher in child.teachers:
-                            if teacher.name == rand_teacher.name:
-                                teacher.schedule[rand_day][rand_hour] = new_lesson  # przypisuje do planu nauczyciela
-                                break
-                        break
+
+                    elif (subject.classroom != '*' or subject.teacher != '*') and subject.name != 'tutoring_hour':
+                        # nauczyciel ma czas i sala wolna
+                        if subject.classroom.schedule[day][hour].classroom == '*' and \
+                                subject.teacher.schedule[day][hour].teacher == '*':
+                            subject.classroom.schedule[day][hour] = subject
+                            subject.teacher.schedule[day][hour] = subject
+                            for child_teacher in child_teachers:
+                                if child_teacher.name == subject.teacher.name:
+                                    child_teacher.schedule[day][hour] = subject
+                                    break
+                            for child_classroom in child_classrooms:
+                                if child_classroom.name == subject.classroom.name:
+                                    child_classroom.schedule[day][hour] = subject
+                                    break
+                        # proba zmiany sali dla nauczyciela
+                        elif subject.classroom.schedule[day][hour].classroom != '*' and \
+                                subject.teacher.schedule[day][hour].teacher == '*':
+                            for _ in range(1000):
+                                rand_classroom = random.choice(child_classrooms)
+                                if subject.name in rand_classroom.subjects and rand_classroom.schedule[day][
+                                    hour].name == '*':
+                                    subject.classroom = rand_classroom
+                                    rand_classroom.schedule[day][hour] = subject
+                                    subject.teacher.schedule[day][hour] = subject
+                                    for child_teacher in child_teachers:
+                                        if child_teacher.name == subject.teacher.name:
+                                            child_teacher.schedule[day][hour] = subject
+                                            break
+                                    for child_classroom in child_classrooms:
+                                        if child_classroom.name == subject.classroom.name:
+                                            child_classroom.schedule[day][hour] = subject
+                                            break
+                                    break
+
+                                # szukanie innego terminu dla klasy nauczyciela i sali
+                                if _ == 999:
+                                    while True:
+                                        rand_day = random.choice(days)
+                                        rand_hour = random.choice(list(range(hours)))
+                                        if subject.classroom.schedule[rand_day][rand_hour].classroom == '*' and \
+                                                subject.teacher.schedule[rand_day][rand_hour].teacher == '*' and \
+                                                students_class.schedule[rand_day][rand_hour].name == '*':
+                                            subject.day = rand_day
+                                            subject.hour = rand_hour
+                                            subject.classroom.schedule[rand_day][rand_hour].classroom = subject
+                                            subject.teacher.schedule[rand_day][rand_hour].teacher = subject
+                                            students_class.schedule[rand_day][rand_hour] = subject
+                                            for child_teacher in child_teachers:
+                                                if child_teacher.name == subject.teacher.name:
+                                                    child_teacher.schedule[rand_day][rand_hour] = subject
+                                                    break
+                                            for child_classroom in child_classrooms:
+                                                if child_classroom.name == subject.classroom.name:
+                                                    child_classroom.schedule[rand_day][rand_hour] = subject
+                                                    break
+                                            break
+
+                        # proba zmiany nauczyciela do sali
+                        elif subject.classroom.schedule[day][hour].classroom == '*' and \
+                                subject.teacher.schedule[day][hour].teacher != '*':
+                            for _ in range(1000):
+                                rand_teacher = random.choice(child_teachers)
+                                if subject.name in rand_teacher.subjects and rand_teacher.schedule[day][
+                                    hour].name == '*':
+                                    subject.teacher = rand_teacher
+                                    rand_teacher.schedule[day][hour] = subject
+                                    subject.classroom.schedule[day][hour] = subject
+                                    for child_teacher in child_teachers:
+                                        if child_teacher.name == subject.teacher.name:
+                                            child_teacher.schedule[day][hour] = subject
+                                            break
+                                    for child_classroom in child_classrooms:
+                                        if child_classroom.name == subject.classroom.name:
+                                            child_classroom.schedule[day][hour] = subject
+                                            break
+                                    break
+
+                                # szukanie innego terminu dla klasy nauczyciela i sali
+                                if _ == 999:
+                                    while True:
+                                        rand_day = random.choice(days)
+                                        rand_hour = random.choice(list(range(hours)))
+                                        if subject.classroom.schedule[rand_day][rand_hour].classroom == '*' and \
+                                                subject.teacher.schedule[rand_day][rand_hour].teacher == '*' and \
+                                                students_class.schedule[rand_day][rand_hour].name == '*':
+                                            subject.day = rand_day
+                                            subject.hour = rand_hour
+                                            subject.classroom.schedule[rand_day][rand_hour].classroom = subject
+                                            subject.teacher.schedule[rand_day][rand_hour].teacher = subject
+                                            students_class.schedule[rand_day][rand_hour] = subject
+                                            for child_teacher in child_teachers:
+                                                if child_teacher.name == subject.teacher.name:
+                                                    child_teacher.schedule[rand_day][rand_hour] = subject
+                                                    break
+                                            for child_classroom in child_classrooms:
+                                                if child_classroom.name == subject.classroom.name:
+                                                    child_classroom.schedule[rand_day][rand_hour] = subject
+                                                    break
+                                            break
+
+                        # proba zmiany i nauczyciela i sali
+                        else:
+                            for _ in range(1000):
+                                rand_teacher = random.choice(child_teachers)
+                                rand_classroom = random.choice(child_classrooms)
+                                if subject.name in rand_teacher.subjects and \
+                                        subject.name in rand_classroom.subjects and \
+                                        rand_teacher.schedule[day][hour].name == '*' and \
+                                        rand_classroom.schedule[day][hour].name == '*':
+                                    subject.classroom = rand_classroom
+                                    subject.teacher = rand_teacher
+                                    rand_teacher.schedule[day][hour] = subject
+                                    rand_classroom.schedule[day][hour] = subject
+                                    for child_teacher in child_teachers:
+                                        if child_teacher.name == subject.teacher.name:
+                                            child_teacher.schedule[day][hour] = subject
+                                            break
+                                    for child_classroom in child_classrooms:
+                                        if child_classroom.name == subject.classroom.name:
+                                            child_classroom.schedule[day][hour] = subject
+                                            break
+                                    break
+
+                                # szukanie innego terminu dla klasy nauczyciela i sali
+                                if _ == 999:
+                                    while True:
+                                        rand_day = random.choice(days)
+                                        rand_hour = random.choice(list(range(hours)))
+                                        if subject.classroom.schedule[rand_day][rand_hour].classroom == '*' and \
+                                                subject.teacher.schedule[rand_day][rand_hour].teacher == '*' and \
+                                                students_class.schedule[rand_day][rand_hour].name == '*':
+                                            subject.day = rand_day
+                                            subject.hour = rand_hour
+                                            subject.classroom.schedule[rand_day][rand_hour].classroom = subject
+                                            subject.teacher.schedule[rand_day][rand_hour].teacher = subject
+                                            students_class.schedule[rand_day][rand_hour] = subject
+                                            for child_teacher in child_teachers:
+                                                if child_teacher.name == subject.teacher.name:
+                                                    child_teacher.schedule[rand_day][rand_hour] = subject
+                                                    break
+                                            for child_classroom in child_classrooms:
+                                                if child_classroom.name == subject.classroom.name:
+                                                    child_classroom.schedule[rand_day][rand_hour] = subject
+                                                    break
+                                            break
+
+        for students_class in child_students_class:
+            for day, day_schedule in students_class.schedule.items():
+                for hour, subject in enumerate(day_schedule):
+                    if subject.name == 'tutoring_hour':
+                        subject.teacher.class_tutoring = f'{students_class.name}{students_class.grade}'
+                        students_class.tutor = subject.teacher.name
+
+        child = GeneticAlgorithm(mutation_probability=0.2, crossed_probability=0.5, classrooms=child_classrooms,
+                                 teachers=child_teachers, students_class=child_students_class)
         return child
 
     def perform_mutation(self, chromosome, teachers, classrooms, class_index):
@@ -725,7 +855,7 @@ if __name__ == '__main__':
                 for grade_class in students_class_grades:
                     list_of_students_class.append(StudentsClass(letters[j], grade_class))
 
-            school_schedule = GeneticAlgorithm(population_size=100, mutation_probability=0.2, crossed_probability=0.5,
+            school_schedule = GeneticAlgorithm(mutation_probability=0.2, crossed_probability=0.5,
                                                classrooms=list_of_classrooms, teachers=list_of_teachers,
                                                students_class=list_of_students_class)
             school_schedule.generate_initial_population()
@@ -749,6 +879,6 @@ if __name__ == '__main__':
         all_solutions.sort(reverse=False, key=lambda x: x[1])
 
     # Wypisywanie rozwiazan
-    # print_students_class_schedule(all_solutions[:1])
+    print_students_class_schedule(all_solutions[:1])
     # print_teachers_schedule(all_solutions[:1])
-    print_classrooms_schedule(all_solutions[:1])
+    # print_classrooms_schedule(all_solutions[:1])
