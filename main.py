@@ -697,5 +697,7 @@ if __name__ == '__main__':
 
         all_solutions = all_solutions + best_solutions
         all_solutions.sort(reverse=False, key=lambda x: x[1])
+
+    # Wypisywanie rozwiazan
     print_students_class_schedule(all_solutions[:1])
     # print_teachers_schedule(all_solutions[:1])
