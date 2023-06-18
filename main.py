@@ -261,6 +261,56 @@ def print_teachers_schedule(result_solutions):
                 print(f'| {class_names[0]} | {class_names[1]} | {class_names[2]} | {class_names[3]} |'
                       f' {class_names[4]} |')
                 print('-' * (5 * table_width + 16))
+                
+                
+                
+def print_classrooms_schedule(result_solutions):
+    for number_of_solution, result_solution in enumerate(result_solutions):
+        print(f'Rozwiazanie: {number_of_solution + 1}')
+        for selected_classroom in result_solution[0].classrooms:
+            print(f'Sala: {selected_classroom.name}')
+            result_schedule = list(selected_classroom.schedule.values())
+            table_width = 30
+
+            result_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            for i, result_day in enumerate(result_days):
+                fix_subject_view = table_width - len(result_day)
+                result_days[i] = result_days[i] + ' ' * fix_subject_view
+
+            for result_day in result_schedule:
+                for i, result_subject in enumerate(result_day):
+                    fix_subject_view = table_width - len(str(result_subject.name))
+                    result_day[i].name = str(result_day[i].name) + ' ' * fix_subject_view
+
+            print('-' * (5 * table_width + 16))
+            print(
+                f'| {result_days[0]} | {result_days[1]} | {result_days[2]} | {result_days[3]} | {result_days[4]} |')
+            print('-' * (5 * table_width + 16))
+            for i in range(12):
+                teacher_names = [
+                    str(result_schedule[k][i].teacher.name) if result_schedule[k][i].teacher != '*' else '*'
+                    for k in range(len(result_schedule))]
+
+                class_names = [
+                    str(result_schedule[k][i].class_name)
+                    for k in range(len(result_schedule))]
+                for k, teacher_name in enumerate(teacher_names):
+                    fix_subject_view = table_width - len(teacher_name)
+                    teacher_names[k] = teacher_names[k] + ' ' * fix_subject_view
+
+                for k, teacher_name in enumerate(class_names):
+                    fix_subject_view = table_width - len(teacher_name)
+                    class_names[k] = class_names[k] + ' ' * fix_subject_view
+
+                print(
+                    f'| {result_schedule[0][i].name} | {result_schedule[1][i].name} | '
+                    f'{result_schedule[2][i].name} | {result_schedule[3][i].name} | {result_schedule[4][i].name} |')
+                print(
+                    f'| {teacher_names[0]} | {teacher_names[1]} | {teacher_names[2]} | {teacher_names[3]} |'
+                    f' {teacher_names[4]} |')
+                print(f'| {class_names[0]} | {class_names[1]} | {class_names[2]} | {class_names[3]} |'
+                      f' {class_names[4]} |')
+                print('-' * (5 * table_width + 16))
 
 
 class GeneticAlgorithm:
@@ -699,5 +749,6 @@ if __name__ == '__main__':
         all_solutions.sort(reverse=False, key=lambda x: x[1])
 
     # Wypisywanie rozwiazan
-    print_students_class_schedule(all_solutions[:1])
+    # print_students_class_schedule(all_solutions[:1])
     # print_teachers_schedule(all_solutions[:1])
+    print_classrooms_schedule(all_solutions[:1])
