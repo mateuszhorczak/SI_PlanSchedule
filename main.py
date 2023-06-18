@@ -100,7 +100,7 @@ class ClassRoom:
         for day in self.schedule:
             schedule_array = []
             for i in range(hours):
-                schedule_array.append(Lesson('*', '*', '*', '*', '*'))
+                schedule_array.append(Lesson('*', '*', '*', '*', '*', '*'))
             self.schedule.update({day: schedule_array})
 
 
@@ -116,7 +116,7 @@ class Teacher:
         for day in self.schedule:
             schedule_array = []
             for i in range(hours):
-                schedule_array.append(Lesson('*', '*', '*', '*', '*'))
+                schedule_array.append(Lesson('*', '*', '*', '*', '*', '*'))
             self.schedule.update({day: schedule_array})
 
 
@@ -151,20 +151,21 @@ class StudentsClass:
         for day in self.schedule:
             schedule_array = []
             for i in range(hours):
-                schedule_array.append(Lesson('*', '*', '*', '*', '*'))
+                schedule_array.append(Lesson('*', '*', '*', '*', '*', '*'))
             self.schedule.update({day: schedule_array})
 
 
 class Lesson:
-    def __init__(self, name, teacher, classroom, day, hour):
+    def __init__(self, name, teacher, classroom, day, hour, class_name):
         self.name = name
         self.teacher = teacher
         self.classroom = classroom
+        self.class_name = class_name
         self.day = day
         self.hour = hour
 
 
-def print_schedule(result_solutions):
+def print_students_class_schedule(result_solutions):
     for number_of_solution, result_solution in enumerate(result_solutions):
         print(f'Rozwiazanie: {number_of_solution + 1}')
         for selected_students_class in result_solution[0].students_class:
@@ -210,6 +211,55 @@ def print_schedule(result_solutions):
                     f' {classroom_names[4]} |')
                 print(f'| {teacher_names[0]} | {teacher_names[1]} | {teacher_names[2]} | {teacher_names[3]} |'
                       f' {teacher_names[4]} |')
+                print('-' * (5 * table_width + 16))
+
+
+def print_teachers_schedule(result_solutions):
+    for number_of_solution, result_solution in enumerate(result_solutions):
+        print(f'Rozwiazanie: {number_of_solution + 1}')
+        for selected_teacher in result_solution[0].teachers:
+            print(f'Nauczyciel: {selected_teacher.name}')
+            result_schedule = list(selected_teacher.schedule.values())
+            table_width = 30
+
+            result_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            for i, result_day in enumerate(result_days):
+                fix_subject_view = table_width - len(result_day)
+                result_days[i] = result_days[i] + ' ' * fix_subject_view
+
+            for result_day in result_schedule:
+                for i, result_subject in enumerate(result_day):
+                    fix_subject_view = table_width - len(str(result_subject.name))
+                    result_day[i].name = str(result_day[i].name) + ' ' * fix_subject_view
+
+            print('-' * (5 * table_width + 16))
+            print(
+                f'| {result_days[0]} | {result_days[1]} | {result_days[2]} | {result_days[3]} | {result_days[4]} |')
+            print('-' * (5 * table_width + 16))
+            for i in range(12):
+                classroom_names = [
+                    str(result_schedule[k][i].classroom.name) if result_schedule[k][i].classroom != '*' else '*'
+                    for k in range(len(result_schedule))]
+                class_names = [
+                    str(result_schedule[k][i].class_name)
+                    for k in range(len(result_schedule))]
+
+                for k, classroom_name in enumerate(classroom_names):
+                    fix_subject_view = table_width - len(classroom_name)
+                    classroom_names[k] = classroom_names[k] + ' ' * fix_subject_view
+
+                for k, teacher_name in enumerate(class_names):
+                    fix_subject_view = table_width - len(teacher_name)
+                    class_names[k] = class_names[k] + ' ' * fix_subject_view
+
+                print(
+                    f'| {result_schedule[0][i].name} | {result_schedule[1][i].name} | '
+                    f'{result_schedule[2][i].name} | {result_schedule[3][i].name} | {result_schedule[4][i].name} |')
+                print(
+                    f'| {classroom_names[0]} | {classroom_names[1]} | {classroom_names[2]} | {classroom_names[3]} |'
+                    f' {classroom_names[4]} |')
+                print(f'| {class_names[0]} | {class_names[1]} | {class_names[2]} | {class_names[3]} |'
+                      f' {class_names[4]} |')
                 print('-' * (5 * table_width + 16))
 
 
@@ -286,7 +336,8 @@ class GeneticAlgorithm:
 
                             new_lesson = Lesson(name=subject, classroom=rand_classroom, teacher=rand_teacher,
                                                 day=rand_day,
-                                                hour=rand_hour)
+                                                hour=rand_hour, class_name=f'{selected_students_class.grade}'
+                                                                           f'{selected_students_class.name}')
 
                             selected_students_class.schedule[rand_day][
                                 rand_hour] = new_lesson  # przypisuje do planu klasy
@@ -410,7 +461,7 @@ class GeneticAlgorithm:
     def perform_crossover(self, parent1, parent2):
         # operacje krzyzowania na tablicy chromosomow
         crossover_point = random.randint(0, 5)
-        empty_lesson = Lesson('*', '*', '*', '*', '*')
+        empty_lesson = Lesson('*', '*', '*', '*', '*', '*')
         empty_lesson_array = [empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson,
                               empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson, empty_lesson]
 
@@ -447,17 +498,18 @@ class GeneticAlgorithm:
         for subject in removed_subjects_during_crossover:
             for classroom in child.classrooms:
                 if classroom != '*' and subject.classroom != '*' and classroom.name == subject.classroom.name:
-                    classroom.schedule[subject.day][subject.hour] = Lesson('*', '*', '*', '*', '*')
+                    classroom.schedule[subject.day][subject.hour] = Lesson('*', '*', '*', '*', '*', '*')
                     break
             for teacher in child.teachers:
                 if teacher != '*' and subject.classroom != '*' and teacher.name == subject.teacher.name:
-                    teacher.schedule[subject.day][subject.hour] = Lesson('*', '*', '*', '*', '*')
+                    teacher.schedule[subject.day][subject.hour] = Lesson('*', '*', '*', '*', '*', '*')
                     break
 
         missing_subjects = {}
         for subject in removed_subjects_during_crossover:
             subject_number = 1 if missing_subjects.get(subject) is None else int(missing_subjects.get(subject)) + 1
-            missing_subjects.update({subject: subject_number}) if subject != Lesson('*', '*', '*', '*', '*') else None
+            missing_subjects.update({subject: subject_number}) if subject != Lesson('*', '*', '*', '*', '*', '*') \
+                else None
 
         # Przydzielanie przedmiotów do planu zajęć
         for subject, hours_per_week in missing_subjects.items():
@@ -473,7 +525,9 @@ class GeneticAlgorithm:
                             and rand_teacher.schedule[rand_day][rand_hour].teacher == '*':
 
                         new_lesson = Lesson(name=subject.name, classroom=rand_classroom, teacher=rand_teacher,
-                                            day=rand_day, hour=rand_hour)
+                                            day=rand_day, hour=rand_hour,
+                                            class_name=f'{child.students_class[crossover_class].grade}'
+                                                       f'{child.students_class[crossover_class].name}')
 
                         child.students_class[crossover_class].schedule[rand_day][
                             rand_hour] = new_lesson  # przypisuje do planu klasy
@@ -502,7 +556,7 @@ class GeneticAlgorithm:
                     # ---------
                     fitness_score_before_mutation = self.perform_selection()
                     muted_gen = subject
-                    day_schedule[i] = Lesson('*', '*', '*', '*', '*')
+                    day_schedule[i] = Lesson('*', '*', '*', '*', '*', '*')
                     for _ in range(1000):
                         rand_day = random.choice(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
                         rand_hour = random.choice(list(range(1, 12)))
@@ -643,4 +697,7 @@ if __name__ == '__main__':
 
         all_solutions = all_solutions + best_solutions
         all_solutions.sort(reverse=False, key=lambda x: x[1])
-    print_schedule(all_solutions[:1])
+
+    # Wypisywanie rozwiazan
+    print_students_class_schedule(all_solutions[:1])
+    # print_teachers_schedule(all_solutions[:1])
